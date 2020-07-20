@@ -1,8 +1,8 @@
 import {
-    createElement,
-    Title,
-    Text,
     Button,
+    Text,
+    Title,
+    createElement,
 } from './Core';
 
 
@@ -54,7 +54,7 @@ export default (store, dispatch) => {
             }
         },
     });
-    // const npcList = Text('');
+    const tileType = Text(''); // Town/Encounter/POI/Uneventful
     const idField = Text(defaultUnselectedText);
     const button = Button('action', (ev) => {
         if(ev.target.innerText === 'Create Tile') {
@@ -88,11 +88,14 @@ export default (store, dispatch) => {
             button.show();
             biomeSelector.hide();
             title.hide();
+            tileType.hide();
         }
         else {
             button.hide();
             biomeSelector.show();
             title.show();
+            tileType.show();
+            tileType.setText(tile.type ? tile.type : 'Uneventful');
         }
     };
     const unselectedTile = () => {
@@ -100,6 +103,7 @@ export default (store, dispatch) => {
         button.hide();
         biomeSelector.hide();
         title.hide();
+        tileType.hide();
     };
 
     // return createElement({
@@ -116,6 +120,7 @@ export default (store, dispatch) => {
         children: [
             title,
             idField,
+            tileType,
             // npcList,
             biomeSelector,
             button,

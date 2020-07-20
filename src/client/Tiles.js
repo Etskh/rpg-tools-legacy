@@ -1,9 +1,9 @@
 import {
     // BoxGeometry,
-    CylinderGeometry,
-    MeshLambertMaterial,
-    Mesh,
     Color,
+    CylinderGeometry,
+    Mesh,
+    MeshLambertMaterial,
 } from 'three';
 
 

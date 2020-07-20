@@ -32,5 +32,8 @@ module.exports = {
             'error',
             'always-multiline',
         ],
+        'sort-imports': 'error',
+        "prefer-const": "error",
+        "no-var": "error",
     }
 };

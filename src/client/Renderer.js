@@ -1,28 +1,25 @@
 import {
-    WebGLRenderer,
+    AmbientLight,
+    Clock,
     Color,
-    PerspectiveCamera,
-    Scene,
+    DirectionalLight,
+    DoubleSide,
     FogExp2,
+    Mesh,
+    MeshBasicMaterial,
+    PerspectiveCamera,
+    PlaneGeometry,
     Raycaster,
+    Scene,
+    TorusBufferGeometry,
     Vector2,
     Vector3,
-    AmbientLight,
-    DirectionalLight,
-    //
-    TorusBufferGeometry,
-    MeshBasicMaterial,
-    Mesh,
-    PlaneGeometry,
-    DoubleSide,
-    // 
-    Clock,
-    //
-    PointsMaterial,
+    WebGLRenderer,
 } from 'three';
 import {
     WEBGL,
 } from './vendor/three/WebGL';
+import { isDown } from './Input';
 import { createElement } from './Core';
 
 
@@ -68,7 +65,6 @@ export default (store, dispatch) => {
     const screenSpaceMouse = new Vector2();
     const clock = new Clock();
     let _picked = [];
-    const keys = {};
 
     // Add UI
     const selectionCircle = createSelectionRing();
@@ -107,16 +103,16 @@ export default (store, dispatch) => {
 
             const cameraDelta = new Vector3();
             const cameraSpeed = 3;
-            if(keys[37]) {
+            if(isDown('Left')) {
                 cameraDelta.x -= cameraSpeed;
             }
-            if(keys[39]) {
+            if(isDown('Right')) {
                 cameraDelta.x += cameraSpeed;
             }
-            if(keys[38]) {
+            if(isDown('Up')) {
                 cameraDelta.z -= cameraSpeed;
             }
-            if(keys[40]) {
+            if(isDown('Down')) {
                 cameraDelta.z += cameraSpeed;
             }
             camera.position.addScaledVector(cameraDelta, clock.getDelta());
@@ -127,15 +123,6 @@ export default (store, dispatch) => {
         onFrame();
     };
 
-    // TODO: fix me - hacky but... it works
-    window.addEventListener('keydown', (ev) => {
-        keys[ev.keyCode] = true;
-        // console.log(ev.keyCode);
-    });
-    // TODO: fix me - hacky but... it works
-    window.addEventListener('keyup', (ev) => {
-        keys[ev.keyCode] = false;
-    });
 
     // Save the camera position in local storage every couple seconds
     setInterval(() => {
