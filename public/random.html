@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Explorer</title>
+		<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@100&display=swap" rel="stylesheet" />
+		<style>
+			body {
+				/* to avoid flash */
+				background-color: #222;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas width="512" height="512" id="root"></div>
+		<div id="scripts">
+			<script>
+
+				function drawRandomGradients(ctx, areaSize, colour) {
+					const [x, y] = [Math.random() * areaSize, Math.random() * areaSize];
+					const size = Math.random() * (areaSize/6);
+					// const alpha = 1 / size;
+
+					// ctx.createRadialGradient(x0, y0, r0, x1, y1, r1);
+					var gradient = ctx.createRadialGradient(x, y, 1, x, y, size);
+
+					// Add three color stops
+					gradient.addColorStop(0, colour);
+					gradient.addColorStop(1, 'transparent');
+					// gradient.addColorStop(2, 'transparent');
+
+					// Set the fill style and draw a rectangle
+					ctx.fillStyle = gradient;
+					ctx.fillRect(0, 0, areaSize, areaSize);
+				}
+
+				function drawRandomCircle(ctx, areaSize, colour) {
+					ctx.fillStyle = colour;
+					const [x, y] = [Math.random() * areaSize, Math.random() * areaSize];
+					const size = Math.random() * (areaSize/6);
+					// const alpha = 1 / size;
+
+					ctx.beginPath();
+					ctx.arc(x, y, size, 0, 360);
+					// ctx.arc(x, y, radius, startAngle, endAngle);
+					ctx.fill();
+				}
+
+				function createMap(ctx, areaSize, colour) {
+					const white = `rgba(${colour},0.15)`;
+					const black = 'rgba(0,0,0,0.3)';
+
+					for(let i=0; i<100; i++) {
+						drawRandomCircle(ctx, areaSize, white);
+					}
+					for(let i=0; i<400; i++) {
+						drawRandomGradients(ctx, areaSize, black);
+					}
+					for(let i=0; i<300; i++) {
+						drawRandomCircle(ctx, areaSize, white);
+					}
+					for(let i=0; i<200; i++) {
+						drawRandomGradients(ctx, areaSize, black);
+					}
+					for(let i=0; i<50; i++) {
+						drawRandomGradients(ctx, areaSize, white);
+					}
+				}
+
+				function getHighestPixelData(bytes, offset) {
+					return Array.from(bytes.data).reduce((acc, cur, i) => {
+						if(i % 4 !== offset) return acc;
+						return Math.max(acc, cur);
+					}, 0);
+				}
+
+				function getColourPixelData(bytes, offset) {
+					return Array.from(bytes.data).reduce((acc, cur, i) => {
+						if(i % 4 !== offset) return acc;
+						acc.push(cur);
+						return acc;
+					}, []);
+				}
+
+				window.addEventListener('load', () => {
+					const canvas = document.getElementById('root');
+					const areaSize = 512;
+
+					if (canvas.getContext) {
+						const ctx = canvas.getContext('2d');
+						ctx.globalCompositeOperation = 'lighten';
+
+						console.log('Generating map...');
+						createMap(ctx, areaSize, '255,0,0');
+						createMap(ctx, areaSize, '0,255,0');
+						createMap(ctx, areaSize, '0,0,255');
+					
+						console.log('Checking higest...');
+						const bytes = ctx.getImageData(0, 0, areaSize, areaSize);
+						const rocky = getColourPixelData(bytes, 0);
+						const cold = getColourPixelData(bytes, 2);
+						const lush = getColourPixelData(bytes, 1);
+						console.log('Rocky count', rocky.reduce((acc, cur) => acc + cur, 0));
+						console.log('Lush count', lush.reduce((acc, cur) => acc + cur, 0));
+						console.log('Wet count', cold.reduce((acc, cur) => acc + cur, 0));
+
+						const passes = {
+							'Rocky reduces the lushness': ([red, green, blue]) => {
+								if(red > 200) {
+									return [red, Math.round(green / (red - 200)), blue];
+								}
+								return [red, green, blue];
+							},
+							// 'Cold reduces the lushness and increases rocky': ([r, g, b]) => {
+							// 	if(b > 200) {
+							// 		return [
+							// 			Math.min(255, r * (1 + (b-200)/200)),
+							// 			Math.max(0, g * (1 - (b-200)/200)),
+							// 			b,
+							// 		]; 
+							// 	}
+							// 	return [r, g, b];
+							// },
+						};
+
+						const pixels = Array(areaSize * areaSize).fill().map((cur, index) => ([
+							rocky[index],
+							lush[index],
+							cold[index],
+						]));
+						const afterPasses = Object.keys(passes).reduce((acc, pass) => {
+							console.log('Applying pass: ', pass);
+							return pixels.map(cur => passes[pass](cur));
+						}, pixels);
+
+						canvas.setAttribute('alt', 'terrain-' + Math.random());
+
+						// setTimeout(() => {
+						// 	console.log('Applying passes...');
+						// 	afterPasses.forEach((pixel, index) => {
+						// 	const [x, y] = [
+						// 		index % areaSize,
+						// 		Math.floor(index / areaSize),
+						// 	];
+						// 	ctx.fillStyle = `#${pixel[0].toString(16)}${pixel[1].toString(16)}${pixel[2].toString(16)}`;
+						// 	ctx.fillRect(x, y, 1, 1);
+						// });
+						// }, 3000);
+					}
+				});
+
+			</script>
+		</div>
+	</body>
+</html>
