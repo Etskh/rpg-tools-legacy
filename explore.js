@@ -8,7 +8,7 @@ const webpackConfig = require('./webpack.config');
 const {
   getPois,
   updatePoi,
-  getBackgrounds,
+  getBiomes,
   createPoi,
 } = require('./src/lib/world');
 
@@ -99,7 +99,7 @@ fastify.put('/api/poi', (request, reply) => {
 
 
 fastify.get('/api/biomes', (req, res) => {
-	getBackgrounds().then(pois => {
+	getBiomes().then(pois => {
 		res.send({
 			data: pois,
 		});

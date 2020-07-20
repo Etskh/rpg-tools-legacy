@@ -5,7 +5,7 @@ const {
     createRecords,
 } = require('./airtable');
 
-function getBackgrounds() {
+function getBiomes() {
     return getMappedRecords('Biome', {
         name: 'Name',
         hue: 'Hue',
@@ -25,29 +25,11 @@ const POI_MAPPER = {
     variance: 'Variance',
 };
 
-// {
-// 	"Name": "Town of Wealdhold",
-// 	"Background": [
-// 		"rec1U3kHaG2rjFqyn"
-// 	],
-// 	"Type": "Town",
-// 	"Location": "[0, 0]",
-// 	"NPC": [
-// 		"recudGSoZtcZ8ALoH",
-// 		"recTKyNjobIQXE2sy"
-// 	],
-// 	"Variance": 0.8,
-// 	"Deco": [
-// 		{
-// 		"id": "atty2Y3Dkn3sWICtj"
-// 		}
-// 	]
-// }
 const POI_REVERSE_MAPPER = (tile) => ({
     id: tile.id,
     Name: tile.name,
     ...(tile.biomeId ? {
-        Background: [
+        Biome: [
             tile.biomeId,
         ],
     } : {}),
@@ -59,9 +41,9 @@ const POI_REVERSE_MAPPER = (tile) => ({
 });
 
 
-function getPoisWithBackground({backgrounds, tiles}) {
+function getPoisWithBiome({biomes, tiles}) {
     return tiles.map(tile => {
-        const biome = backgrounds.find(b => b.id === tile.biomeId);
+        const biome = biomes.find(b => b.id === tile.biomeId);
         if(!biome) {
             console.warn('Unknown biome for tile');
             return null;
@@ -82,11 +64,11 @@ function getPoisWithBackground({backgrounds, tiles}) {
 
 function getPois() {
     return Promise.all([
-        getBackgrounds(),
+        getBiomes(),
         getMappedRecords('POI', POI_MAPPER),
-    ]).then(([backgrounds, tiles]) => {
-        return getPoisWithBackground({
-            backgrounds,
+    ]).then(([biomes, tiles]) => {
+        return getPoisWithBiome({
+            biomes,
             tiles,
         });
     });
@@ -98,11 +80,11 @@ function getPois() {
 
 function updatePoi(tile) {
     return Promise.all([
-        getBackgrounds(),
+        getBiomes(),
         updateRecords('POI', [POI_REVERSE_MAPPER(tile)]),
-    ]).then(([backgrounds, updatedPois]) => {
-        const pois = getPoisWithBackground({
-            backgrounds,
+    ]).then(([biomes, updatedPois]) => {
+        const pois = getPoisWithBiome({
+            biomes,
             tiles: updatedPois.map(tile => mapRecord(tile, POI_MAPPER)),
         });
 
@@ -116,19 +98,19 @@ function updatePoi(tile) {
 
 
 function createPoi(tile) {
-    return getBackgrounds().then(backgrounds => {
+    return getBiomes().then(biomes => {
 
         // Get a random background
         if(!tile.biomeId) {
-            tile.biomeId = backgrounds[0].id;
+            tile.biomeId = biomes[0].id;
         }
         if(!tile.variance) {
             tile.variance = Math.random();
         }
 
         return createRecords('POI', [POI_REVERSE_MAPPER(tile)]).then( createdPois => {
-            const pois = getPoisWithBackground({
-                backgrounds,
+            const pois = getPoisWithBiome({
+                biomes,
                 tiles: createdPois.map(tile => mapRecord(tile, POI_MAPPER)),
             });
 
@@ -145,6 +127,6 @@ function createPoi(tile) {
 module.exports = {
     getPois,
     updatePoi,
-    getBackgrounds,
+    getBiomes,
     createPoi,
 };
