@@ -13,7 +13,7 @@
 		"fastify": "^2.15.1",
 		"nodemon": "^2.0.4",
 		"style-loader": "^1.2.1",
-		"three": "^0.118.3"
+		"three": "^0.137.0"
 	},
 	"devDependencies": {
 		"eslint": "^7.4.0",
